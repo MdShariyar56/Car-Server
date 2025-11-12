@@ -50,7 +50,20 @@ async function run() {
         }
     });
 
-   
+   app.post("/cars", async (req, res) => {
+  try {
+    const car = {
+      ...req.body,
+      status: 'Available', 
+      createdAt: new Date()
+    };
+    const result = await modelCollection.insertOne(car);
+    res.status(201).send({ message: "Car added", carId: result.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Could not add car", error: err.message });
+  }
+});
 
 
 
