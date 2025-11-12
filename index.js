@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+   // await client.connect();
    
     const db = client.db('car_DB')
     const modelCollection = db.collection('cars')
@@ -40,15 +40,17 @@ async function run() {
     });
 
     app.get('/cars/:id', async (req, res) => {
-    const id = req.params.id;
-    try {
-        const car = await modelCollection.findOne({ _id: new ObjectId(id) });
-        if (!car) return res.status(404).send({ message: "Car not found" });
-        res.send(car);
-    } catch (err) {
-        res.status(500).send({ message: "Server error", error: err.message });
-    }
-   });
+        const id = req.params.id;
+        try {
+            const car = await modelCollection.findOne({ _id: new ObjectId(id) });
+            if (!car) return res.status(404).send({ message: "Car not found" });
+            res.send(car);
+        } catch (err) {
+            res.status(500).send({ message: "Server error", error: err.message });
+        }
+    });
+
+   
 
 
 
@@ -56,7 +58,10 @@ async function run() {
 
 
 
-    await client.db("admin").command({ ping: 1 });
+
+
+
+    //await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
