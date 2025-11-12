@@ -81,6 +81,30 @@ async function run() {
 });
 
 
+ app.put("/cars/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedCar = req.body;
+
+  try {
+    const result = await modelCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedCar }
+    );
+
+   
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ message: "Car not found" });
+    }
+
+    res.send({ message: "Car updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Could not update car", error: err.message });
+  }
+});
+
+
+
 
 
 
