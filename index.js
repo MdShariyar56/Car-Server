@@ -65,6 +65,21 @@ async function run() {
   }
 });
 
+  app.delete("/cars/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await modelCollection.deleteOne({ _id: new ObjectId(id) });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).send({ message: "Car not found" });
+      }
+
+      res.send({ message: "Car deleted successfully" });
+    } catch (err) {
+      res.status(500).send({ message: "Could not delete car", error: err.message });
+    }
+});
+
 
 
 
