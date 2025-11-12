@@ -32,6 +32,7 @@ async function run() {
    
     const db = client.db('car_DB')
     const modelCollection = db.collection('cars')
+    const bookingsCollection = db.collection('bookings');
 
 
     app.get('/cars',async (req, res) => {
@@ -100,6 +101,33 @@ async function run() {
   } catch (err) {
     console.error(err);
     res.status(500).send({ message: "Could not update car", error: err.message });
+  }
+});
+  // ✅ নতুন বুকিং তৈরি করা
+  app.post("/bookings", async (req, res) => {
+    try {
+    const booking = req.body;
+
+    // Validation check
+    if (!booking.carId || !booking.userEmail) {
+      return res.status(400).send({ message: "carId এবং userEmail প্রয়োজন" });
+    }
+
+    booking.createdAt = new Date();
+
+    const result = await bookingsCollection.insertOne(booking);
+    res.status(201).send({
+      success: true,
+      message: "Booking successful",
+      insertedId: result.insertedId,
+    });
+  } catch (err) {
+    console.error("Booking Error:", err);
+    res.status(500).send({
+      success: false,
+      message: "Failed to create booking",
+      error: err.message,
+    });
   }
 });
 
