@@ -124,6 +124,11 @@ async function run() {
     booking.createdAt = new Date();
     const result = await bookingsCollection.insertOne(booking);
 
+      await modelCollection.updateOne(
+      { _id: new ObjectId(booking.carId) },
+      { $set: { status: "Booked" } }
+    );
+
     res.status(201).send({
       success: true,
       message: "Booking successful",
@@ -157,8 +162,6 @@ app.get("/bookings", async (req, res) => {
  app.delete("/bookings/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    console.log("Cancelling booking:", id); 
-
     let objectId;
     try {
       objectId = new ObjectId(id);
@@ -166,18 +169,30 @@ app.get("/bookings", async (req, res) => {
       return res.status(400).send({ success: false, message: "Invalid booking ID" });
     }
 
-    const result = await bookingsCollection.deleteOne({ _id: objectId });
+    const booking = await bookingsCollection.findOne({ _id: objectId });
+    if (!booking) {
+      return res.status(404).send({ success: false, message: "Booking not found" });
+    }
 
+
+    const result = await bookingsCollection.deleteOne({ _id: objectId });
     if (result.deletedCount === 0) {
       return res.status(404).send({ success: false, message: "Booking not found" });
     }
 
-    res.send({ success: true, message: "Booking deleted successfully" });
+   
+    await modelCollection.updateOne(
+      { _id: new ObjectId(booking.carId) },
+      { $set: { status: "Available" } }
+    );
+
+    res.send({ success: true, message: "Booking cancelled successfully" });
   } catch (err) {
     console.error("Delete Booking Error:", err);
-    res.status(500).send({ success: false, message: "Could not delete booking", error: err.message });
+    res.status(500).send({ success: false, message: "Could not cancel booking", error: err.message });
   }
 });
+
 
 
 
