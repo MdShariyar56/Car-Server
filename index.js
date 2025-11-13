@@ -103,19 +103,27 @@ async function run() {
     res.status(500).send({ message: "Could not update car", error: err.message });
   }
 });
-  // ✅ নতুন বুকিং তৈরি করা
+
   app.post("/bookings", async (req, res) => {
     try {
     const booking = req.body;
 
     // Validation check
     if (!booking.carId || !booking.userEmail) {
-      return res.status(400).send({ message: "carId এবং userEmail প্রয়োজন" });
+      return res.status(400).send({ message: "carId and userEmail needed" });
     }
 
-    booking.createdAt = new Date();
+    const existing = await bookingsCollection.findOne({
+      carId: booking.carId,
+      userEmail: booking.userEmail
+    });
 
+    if (existing) {
+      return res.status(400).send({ message: "You already booked this car!" });
+    }
+    booking.createdAt = new Date();
     const result = await bookingsCollection.insertOne(booking);
+
     res.status(201).send({
       success: true,
       message: "Booking successful",
@@ -131,6 +139,45 @@ async function run() {
   }
 });
 
+app.get("/bookings", async (req, res) => {
+  const { userEmail, carId } = req.query;
+  const query = {};
+  if (userEmail) query.userEmail = userEmail;
+  if (carId) query.carId = carId;
+
+  try {
+    const bookings = await bookingsCollection.find(query).toArray();
+    res.send(bookings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Failed to fetch bookings", error: err.message });
+  }
+});
+
+ app.delete("/bookings/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log("Cancelling booking:", id); 
+
+    let objectId;
+    try {
+      objectId = new ObjectId(id);
+    } catch (err) {
+      return res.status(400).send({ success: false, message: "Invalid booking ID" });
+    }
+
+    const result = await bookingsCollection.deleteOne({ _id: objectId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).send({ success: false, message: "Booking not found" });
+    }
+
+    res.send({ success: true, message: "Booking deleted successfully" });
+  } catch (err) {
+    console.error("Delete Booking Error:", err);
+    res.status(500).send({ success: false, message: "Could not delete booking", error: err.message });
+  }
+});
 
 
 
