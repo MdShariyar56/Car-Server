@@ -126,7 +126,7 @@ async function run() {
 
       await modelCollection.updateOne(
       { _id: new ObjectId(booking.carId) },
-      { $set: { status: "Booked" } }
+      { $set: { status: "unavaliable" } }
     );
 
     res.status(201).send({
